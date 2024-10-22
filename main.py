@@ -17,7 +17,7 @@ epayco = Epayco({
     'test': os.getenv('EPAYCO_TEST') == 'true'
 })
 
-#metodo para crear un token de la tarjeta
+#metodo para crear un token de la tarjeta //
 def create_token(data):
     try:
         card_info = {
