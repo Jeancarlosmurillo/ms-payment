@@ -48,6 +48,20 @@ def create_customer(token, data):
         return customer
     except Exception as e:
         return {'error': str(e)}
+    
+      # Método para obtener la bill_reference desde el microservicio de negocio
+def get_bill_reference(bill_reference):
+    try:
+        # Hacer una solicitud HTTP al microservicio para obtener la referencia de la factura
+        url = f"{os.getenv('MS-LOGIC_URL')}/createMSP/{id}"
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            return response.json().get('bill_reference')
+        else:
+            return None
+    except Exception as e:
+        return None
 
 # Método para procesar el pago
 def process_payment(data, customer_id, token_card):
@@ -130,6 +144,29 @@ def handle_process_payment():
     print("Notification response", json.dumps(notification_response))
 
     return jsonify(payment_response), 200
+
+    # Método para obtener la información de un pago
+def get_payment(bill_id):
+    try:
+        # Llama al método de ePayco para consultar un pago
+        response = epayco.charge.get(bill_id)
+        return response
+    except Exception as e:
+        return {'error': str(e)}
+
+# Endpoint para obtener un pago específico
+@app.route('/payment/id', methods=['GET'])
+def handle_get_payment(id):
+    # Obtiene la información del pago por su identificador único (bill_id)
+    payment_response = get_payment(id)
+    print("Payment response", json.dumps(payment_response))
+    
+    # Verifica si hubo un error al consultar el pago
+    if 'error' in payment_response:
+        return jsonify(payment_response), 500
+
+    return jsonify(payment_response), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
