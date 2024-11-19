@@ -53,7 +53,7 @@ def create_customer(token, data):
 def get_bill_reference(bill_reference):
     try:
         # Hacer una solicitud HTTP al microservicio para obtener la referencia de la factura
-        url = f"{os.getenv('MS-LOGIC_URL')}/createMSP/{id}"
+        url = f"{os.getenv('MS-LOGIC_URL')}/createPay/{id}"
         response = requests.get(url)
         
         if response.status_code == 200:
