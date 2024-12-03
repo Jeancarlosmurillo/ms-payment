@@ -49,11 +49,11 @@ def create_customer(token, data):
     except Exception as e:
         return {'error': str(e)}
     
-      # Método para obtener la bill_reference desde el microservicio de negocio
+# Método para obtener la bill_reference desde el microservicio de negocio
 def get_bill_reference(bill_reference):
     try:
         # Hacer una solicitud HTTP al microservicio para obtener la referencia de la factura
-        url = f"{os.getenv('MS-LOGIC_URL')}/createPay/{id}"
+        url = f"{os.getenv('MS_LOGIC_URL')}/createPay/{bill_reference}"
         response = requests.get(url)
         
         if response.status_code == 200:
@@ -101,7 +101,8 @@ def send_payment_notification(data):
             "amount": data['value'],  # Monto del pago
             "description": 'Pago recibido con éxito'
         }
-        response = requests.post('http://localhost:5000/paymentNotification', json=notification_data)
+        notification_url = os.getenv('NOTIFICATION_URL', 'http://localhost:5000/paymentNotification')
+        response = requests.post(notification_url, json=notification_data)
         return response.json()
     except Exception as e:
         return {'error': str(e)}
@@ -116,7 +117,7 @@ def handle_process_payment():
     print("Token response", json.dumps(token_response))
 
     # Verificar si hubo error al crear el token
-    if token_response["status"] is False:
+    if 'error' in token_response or token_response.get("status") is False:
         return jsonify(token_response), 500
 
     token_card = token_response['id']  # Extrae el id del token
@@ -145,7 +146,8 @@ def handle_process_payment():
 
     return jsonify(payment_response), 200
 
-    # Método para obtener la información de un pago
+
+# Método para obtener la información de un pago
 def get_payment(bill_id):
     try:
         # Llama al método de ePayco para consultar un pago
@@ -155,10 +157,10 @@ def get_payment(bill_id):
         return {'error': str(e)}
 
 # Endpoint para obtener un pago específico
-@app.route('/payment/id', methods=['GET'])
-def handle_get_payment(id):
+@app.route('/payment/<bill_id>', methods=['GET'])
+def handle_get_payment(bill_id):
     # Obtiene la información del pago por su identificador único (bill_id)
-    payment_response = get_payment(id)
+    payment_response = get_payment(bill_id)
     print("Payment response", json.dumps(payment_response))
     
     # Verifica si hubo un error al consultar el pago
